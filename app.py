@@ -13,9 +13,9 @@ api = Api(app)
 
 your_rest_server_port = 5001
 eureka_client.init(eureka_server="http://insight-discovery-service:8761/eureka/",
-                                app_name="python-client",
+                                app_name="insight-gsheet-reader-service",
                                 instance_port=your_rest_server_port,
-                                instance_id ="python-client:5001")
+                                instance_id ="insight-gsheet-reader-service:5001")
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",port=5000, debug=True)
+    app.run(host="0.0.0.0",port=5001, debug=True)
