@@ -15,8 +15,6 @@ services:
     networks:
       - insight-newtork 
     env_file: 
-      - ./microservice-common-properties.env      
-    depends_on: 
-      - insight-discovery-service
+      - ./microservice-common-properties.env
 networks:     
   insight-newtork:
