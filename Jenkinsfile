@@ -7,12 +7,6 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
-            steps {
-                sh 'docker run --rm -v /root/dashboard-work/jenkins-data/workspace/$JOB_NAME:/app -v /root/.m2/:/root/.m2/ -w /app maven:3-alpine mvn clean package -B -Dactive.profile=docker -Dmaven.test.skip=true'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t $REGISTRY/$JOB_NAME:$BUILD_NUMBER .'
