@@ -50,6 +50,9 @@ def get_main_sheet_data():
     url = request_data['url']
     sheet_name = request_data['sheet-name']
 
+    if(sheet_name.endswith('.xlsx')==False):
+        sheet_name = sheet_name + '.xlsx'
+
     # Download File and save into defined path
     _status = download_file(url, sheet_name)
 

@@ -1,4 +1,4 @@
-#!/home/shakib/Development/Python-Dev/insight-gsheet-reader-service/venv/bin/python3
+#!/home/shakib/Development/git-lab-sources/insight-gsheet-reader-service/venv/bin/python3
 # EASY-INSTALL-ENTRY-SCRIPT: 'gdown==3.9.1','console_scripts','gdown'
 __requires__ = 'gdown==3.9.1'
 import re
