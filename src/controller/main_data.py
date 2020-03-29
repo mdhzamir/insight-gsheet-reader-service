@@ -14,6 +14,7 @@ def read_sheet(file_path, tab_name, column_names_data):
     sheet = xls.parse(sheetNames[index], index=False)
     if len(column_names_data) > 0:
         df = sheet[column_names_data]
+        print(df.first)
     else:
         df = sheet
 
@@ -21,10 +22,10 @@ def read_sheet(file_path, tab_name, column_names_data):
 
 
 
-@main_data.before_app_request
-def log_msg_before_request():
-    current_app.logger.info('REQUEST----------------------')
-    current_app.logger.info('Body: %s', request.get_json())
+# @main_data.before_app_request
+# def log_msg_before_request():
+#     current_app.logger.info('REQUEST----------------------')
+#     current_app.logger.info('Body: %s', request.get_json())
 
 
 @main_data.route("/get-main-data", methods=['POST'])
