@@ -1,6 +1,5 @@
 from flask import Flask
 from flask_restful import Api
-from src.controller.application_data import application_data
 from src.controller.main_data import main_data
 from src.controller.covid_data import covid_data
 import py_eureka_client.eureka_client as eureka_client
