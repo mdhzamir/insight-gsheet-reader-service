@@ -30,11 +30,6 @@ def read_sheet(file_path, tab_name, column_names_data):
 #     current_app.logger.info('Body: %s', request.get_json())
 
 
-@main_data.route("/get-test-data", methods=['POST'])
-def get_test_date():
-    return {'Test Data': '12345'}
-
-
 
 @main_data.route("/get-main-data", methods=['POST'])
 def get_main_sheet_data():
