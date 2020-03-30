@@ -5,10 +5,10 @@ from src.utility.utilities import *
 application_data = Blueprint('application_data',__name__, url_prefix='/api/application')
 
 
-@application_data.before_app_request
-def log_msg_before_request():
-    current_app.logger.info('REQUEST----------------------')
-    current_app.logger.info('Body: %s', request.get_json())
+# @application_data.before_app_request
+# def log_msg_before_request():
+#     current_app.logger.info('REQUEST----------------------')
+#     current_app.logger.info('Body: %s', request.get_json())
 
 
 
