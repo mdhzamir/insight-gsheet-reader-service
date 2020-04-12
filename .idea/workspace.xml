@@ -38,7 +38,7 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/lib" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
@@ -95,38 +95,42 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="409" y="17" key="#app/0.0.1366.728@0.0.1366.728" timestamp="1585315122512" />
-    <state width="1345" height="75" key="GridCell.Tab.0.bottom" timestamp="1585553041387">
+    <state x="463" y="122" key="FileChooserDialogImpl" timestamp="1586322888557">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1345" height="75" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1585553041387" />
-    <state width="1345" height="75" key="GridCell.Tab.0.center" timestamp="1585553041387">
+    <state x="463" y="122" key="FileChooserDialogImpl/0.0.1366.728@0.0.1366.728" timestamp="1586322888557" />
+    <state width="1345" height="236" key="GridCell.Tab.0.bottom" timestamp="1586171758841">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1345" height="75" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1585553041387" />
-    <state width="1345" height="75" key="GridCell.Tab.0.left" timestamp="1585553041387">
+    <state width="1345" height="236" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1586171758841" />
+    <state width="1345" height="236" key="GridCell.Tab.0.center" timestamp="1586171758809">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1345" height="75" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1585553041387" />
-    <state width="1345" height="75" key="GridCell.Tab.0.right" timestamp="1585553041387">
+    <state width="1345" height="236" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1586171758809" />
+    <state width="1345" height="236" key="GridCell.Tab.0.left" timestamp="1586171758809">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1345" height="75" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1585553041387" />
-    <state width="1345" height="236" key="GridCell.Tab.1.bottom" timestamp="1585320645613">
+    <state width="1345" height="236" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1586171758809" />
+    <state width="1345" height="236" key="GridCell.Tab.0.right" timestamp="1586171758841">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1345" height="236" key="GridCell.Tab.1.bottom/0.0.1366.728@0.0.1366.728" timestamp="1585320645613" />
-    <state width="1345" height="236" key="GridCell.Tab.1.center" timestamp="1585320645613">
+    <state width="1345" height="236" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1586171758841" />
+    <state width="1345" height="236" key="GridCell.Tab.1.bottom" timestamp="1586171758842">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1345" height="236" key="GridCell.Tab.1.center/0.0.1366.728@0.0.1366.728" timestamp="1585320645613" />
-    <state width="1345" height="236" key="GridCell.Tab.1.left" timestamp="1585320645613">
+    <state width="1345" height="236" key="GridCell.Tab.1.bottom/0.0.1366.728@0.0.1366.728" timestamp="1586171758842" />
+    <state width="1345" height="236" key="GridCell.Tab.1.center" timestamp="1586171758842">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1345" height="236" key="GridCell.Tab.1.left/0.0.1366.728@0.0.1366.728" timestamp="1585320645613" />
-    <state width="1345" height="236" key="GridCell.Tab.1.right" timestamp="1585320645613">
+    <state width="1345" height="236" key="GridCell.Tab.1.center/0.0.1366.728@0.0.1366.728" timestamp="1586171758842" />
+    <state width="1345" height="236" key="GridCell.Tab.1.left" timestamp="1586171758842">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state width="1345" height="236" key="GridCell.Tab.1.right/0.0.1366.728@0.0.1366.728" timestamp="1585320645613" />
+    <state width="1345" height="236" key="GridCell.Tab.1.left/0.0.1366.728@0.0.1366.728" timestamp="1586171758841" />
+    <state width="1345" height="236" key="GridCell.Tab.1.right" timestamp="1586171758842">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state width="1345" height="236" key="GridCell.Tab.1.right/0.0.1366.728@0.0.1366.728" timestamp="1586171758842" />
     <state x="186" y="9" key="SettingsEditor" timestamp="1585314552744">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
@@ -154,6 +158,11 @@
           <url>file://$PROJECT_DIR$/src/controller/main_data.py</url>
           <line>164</line>
           <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/controller/main_data.py</url>
+          <line>258</line>
+          <option name="timeStamp" value="5" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -247,3 +247,73 @@ def get_covid_data():
     except Exception as e:
         current_app.logger.info('Exception  ---', e)
         return {'status':'Error'}
+
+
+
+@main_data.route("/pivot-data", methods=['POST'])
+def pivot_data():
+    order_data = ''
+
+    try:
+        # Parse Request Body
+        request_data = request.get_json();
+        properties = request_data['properties']
+        data = request_data['data']['listData']
+
+        if 'order' in properties:
+            order = properties['order']
+            order_data = order.split(',')
+
+        df = pd.DataFrame.from_dict(data, orient='columns')
+
+        # Pivot Dataframe based on condition
+        if 'pivot' in properties:
+           df = pivot_dataframe(df, properties)
+
+        # Sort Data Based On Condition
+        if len(order_data) > 0 :
+            df = sort_values(df, order_data)
+
+        return df.to_json(orient='records')
+
+    except Exception as e:
+        return jsonify(default_message())
+
+
+def pivot_dataframe(df, properties):
+    pivot_data = properties['pivot']
+    group_by_column = pivot_data['column']
+    group_by_column_arr = group_by_column.split(',')
+
+    sum_column_arr = pivot_data['sum'].split(',')
+    avg_column_arr = pivot_data['avg'].split(',')
+    agg_column_name = sum_column_arr[0]
+    sum_column_name = sum_column_arr[1]
+    avg_column_name = avg_column_arr[1]
+
+    if agg_column_name != '':
+        df = df.groupby(group_by_column_arr)[agg_column_name].agg(['sum', 'mean']).reset_index().rename(
+            columns={'sum': sum_column_name, 'mean': avg_column_name})
+
+    # print(df.head())
+    return df
+
+def sort_values(df, order_data):
+    asc_order_data_arr = []
+    desc_order_data_arr = []
+
+    for item in order_data:
+        if item.startswith('asc'):
+            asc_order_data = item[item.index('asc') + 4:len(item)]
+            asc_order_data_arr = asc_order_data.split(' ')
+        elif item.startswith('desc'):
+            desc_order_data = item[item.index('desc') + 5:len(item)]
+            desc_order_data_arr = desc_order_data.split(' ')
+
+    if len(asc_order_data_arr) > 0:
+        df = df.sort_values(by=asc_order_data_arr, ascending=True)
+
+    if len(desc_order_data_arr) > 0:
+        df = df.sort_values(by=desc_order_data_arr, ascending=False)
+
+    return df
