@@ -9,53 +9,29 @@ import requests
 # Initialize Blueprint
 main_data = Blueprint('main_data',__name__, url_prefix='/api/main-sheet')
 
-
-
-
 @main_data.route("/get-main-data", methods=['POST'])
 def get_main_sheet_data():
-    asc_order_data = ''
-    desc_order_data = ''
-    asc_order_data_arr = []
-    desc_order_data_arr = []
-    column_names= ''
-    column_names_data= []
-    remove_row= ''
-    order = ''
-    order_data = []
-    tab_name=''
+    try:
+        asc_order_data_arr = []
+        desc_order_data_arr = []
+        column_names_data = []
+        remove_row = ''
+        order_data = []
+        tab_name = ''
 
-    # Parse Request Body
-    request_data = request.get_json();
-    url = request_data['url']
-    sheet_name = request_data['sheet-name']
-
-    if(sheet_name.endswith('.xlsx')==False):
-        sheet_name = sheet_name + '.xlsx'
-
-    # Download File and save into defined path
-    _status = download_file(url, sheet_name)
-
-    if _status:
-
-        # Parse Json Data
-        try:
-            if 'columns' in request_data:
-                column_names = request_data['columns']
-                column_names_data = column_names.split(',')
-
-            if 'tab-name' in request_data:
-                tab_name = request_data['tab-name']
-
-            if 'remove-row' in request_data:
-                remove_row = request_data['remove-row']
-
-            if 'order' in request_data:
-                order = request_data['order']
-                order_data = order.split(',')
-        except:
-            print('Exception Occured Json Parsing')
-
+        # Parse Request Body
+        request_data = request.get_json();
+        url = request_data['url']
+        if 'columns' in request_data:
+            column_names = request_data['columns']
+            column_names_data = column_names.split(',')
+        if 'tab-name' in request_data:
+            tab_name = request_data['tab-name']
+        if 'remove-row' in request_data:
+            remove_row = request_data['remove-row']
+        if 'order' in request_data:
+            order = request_data['order']
+            order_data = order.split(',')
 
         for item in order_data:
             if item.startswith('asc'):
@@ -65,143 +41,28 @@ def get_main_sheet_data():
                 desc_order_data = item[item.index('desc') + 5:len(item)]
                 desc_order_data_arr = desc_order_data.split(' ')
 
-
         # Read Data after basic cleaning
-        df = read_sheet(sheet_name, tab_name, column_names_data)
+        df = read_sheet(url, tab_name, column_names_data)
 
-        """
-        Remove Row based on given condition in json
-        """
-
+        # Remove Row based on given condition in json
         if remove_row != '':
-            for key in remove_row:
-                value = str(remove_row[key])
+            df = remove_row_from_dataframe(remove_row, df)
 
-                if ',' in value:
-                    value_arr = value.split(',')
-                    for data in value_arr:
-                        data = data.strip()
-
-                        if data.startswith('is_empty'):
-                            df.drop(df.loc[df[key] == ''].index, inplace=True)
-
-                        elif data.startswith('contains'):
-                            contains_row_value = data[data.index('contains') + 9: len(data)]
-                            if ' ' in contains_row_value:
-                                contains_row_value_arr = contains_row_value.split(' ')
-                                for contains_data in contains_row_value_arr:
-                                    df.drop(df.loc[df[key] == contains_data].index, inplace=True)
-                            else:
-                                df.drop(df.loc[df[key] == contains_row_value].index, inplace=True)
-
-                        elif data.startswith('eq'):
-                            eq_row_value = data[data.index('eq') + 3: len(data)]
-                            if ' ' in eq_row_value:
-                                eq_row_value_arr = eq_row_value.split(' ')
-                                for eq_row_value in eq_row_value_arr:
-                                    df.drop(df.loc[df[key] == int(eq_row_value)].index, inplace=True)
-                            else:
-                                df.drop(df.loc[df[key] == int(eq_row_value)].index, inplace=True)
-
-
-                elif value.startswith('eq'):
-                    remove_row_value = value[value.index('eq') + 3: len(value)]
-
-                    if ' ' in remove_row_value:
-                        remove_row_value_arr = remove_row_value.split(' ')
-                        for eq_row_value in remove_row_value_arr:
-                            df.drop(df.loc[df[key] == int(eq_row_value)].index, inplace=True)
-                    else:
-                        df.drop(df.loc[df[key] == int(remove_row_value)].index, inplace=True)
-
-
-        """
-        if pivot available in json , then group by apply over dataset
-        """
-
+        # if pivot available in json , then group by apply over dataset
         if 'pivot' in request_data:
-           df =  pivot_dataframe(request_data, df)
-            # agg_column_name= ''
-            # avg_column_name = ''
-            # sum_column_name = ''
-            # agg_data = {}
-            # rename_column = {}
-            #
-            # pivot_data = request_data['pivot']
-            # group_by_column = pivot_data['column']
-            # group_by_column_arr = group_by_column.split(',')
-            #
-            # if 'sum' in pivot_data:
-            #     sum_column_arr = pivot_data['sum'].split(',')
-            #     sum_agg_column_name = sum_column_arr[0]
-            #     rename_column.update({'sum': sum_column_arr[1]})
-            #
-            #     if sum_agg_column_name in agg_data.keys():
-            #         data = agg_data.get(sum_agg_column_name)
-            #         data.append('sum')
-            #         agg_data[sum_agg_column_name] = data
-            #     else:
-            #         agg_data.update({sum_agg_column_name: ['sum']})
-            #
-            #
-            #
-            # if 'avg' in pivot_data:
-            #     avg_column_arr = pivot_data['avg'].split(',')
-            #     avg_agg_column_name = avg_column_arr[0]
-            #     rename_column.update({'mean': avg_column_arr[1]})
-            #
-            #     if avg_agg_column_name in agg_data.keys():
-            #         data = agg_data.get(avg_agg_column_name)
-            #         data.append('mean')
-            #         agg_data[avg_agg_column_name] = data
-            #     else:
-            #         agg_data.update({avg_agg_column_name: ['mean']})
-            #
-            # if 'count' in pivot_data:
-            #     count_column_arr = pivot_data['count'].split(',')
-            #     count_agg_column_name = count_column_arr[0]
-            #     rename_column.update({'count': count_column_arr[1]})
-            #
-            #     if count_agg_column_name in agg_data.keys():
-            #         data = agg_data.get(count_agg_column_name)
-            #         data.append('count')
-            #         agg_data[count_agg_column_name] = data
-            #     else:
-            #         agg_data.update({count_agg_column_name: ['count']})
-            #
-            # if len(agg_data) > 0:
-            #     print(agg_data)
-            #     # df = df.groupby(group_by_column_arr)[agg_column_name].agg(['sum', 'mean']).reset_index().rename(
-            #     #     columns={'sum': sum_column_name, 'mean': avg_column_name})
-            #
-            #     df = df.groupby(group_by_column_arr).agg(agg_data)
-            #
-            #     df = df.droplevel(0, axis=1)
-            #     df = df.rename(columns = rename_column)
-            #     df = df.reset_index()
-            #     print(df.head())
+            df = pivot_dataframe(request_data, df)
 
-        """
-        Sort Values over Data, based on condition given in json
-        """
-
+        # Sort Values over Data, based on condition given in json
         if len(asc_order_data_arr) > 0:
             df = df.sort_values(by=asc_order_data_arr, ascending=True)
-
         if len(desc_order_data_arr) > 0:
             df = df.sort_values(by=desc_order_data_arr, ascending=False)
 
-        """
-        After data processing, remove downloaded file
-        """
-        os.remove(sheet_name)
-
         return df.to_json(orient='records')
 
-    else:
-        return jsonify(default_message())
-
-
+    except Exception as e:
+        print('Exception Occured' , e)
+        return default_message(e)
 
 
 @main_data.route("/get-covid-data", methods=['POST'])
@@ -302,122 +163,3 @@ def pivot_data():
 
     except Exception as e:
         return jsonify(default_message())
-
-
-# def pivot_dataframe(df, properties):
-#     pivot_data = properties['pivot']
-#     group_by_column = pivot_data['column']
-#     group_by_column_arr = group_by_column.split(',')
-#
-#     sum_column_arr = pivot_data['sum'].split(',')
-#     avg_column_arr = pivot_data['avg'].split(',')
-#     agg_column_name = sum_column_arr[0]
-#     sum_column_name = sum_column_arr[1]
-#     avg_column_name = avg_column_arr[1]
-#
-#     if agg_column_name != '':
-#         df = df.groupby(group_by_column_arr)[agg_column_name].agg(['sum', 'mean']).reset_index().rename(
-#             columns={'sum': sum_column_name, 'mean': avg_column_name})
-#
-#     # print(df.head())
-#     return df
-
-def sort_values(df, order_data):
-    asc_order_data_arr = []
-    desc_order_data_arr = []
-
-    for item in order_data:
-        if item.startswith('asc'):
-            asc_order_data = item[item.index('asc') + 4:len(item)]
-            asc_order_data_arr = asc_order_data.split(' ')
-        elif item.startswith('desc'):
-            desc_order_data = item[item.index('desc') + 5:len(item)]
-            desc_order_data_arr = desc_order_data.split(' ')
-
-    if len(asc_order_data_arr) > 0:
-        df = df.sort_values(by=asc_order_data_arr, ascending=True)
-
-    if len(desc_order_data_arr) > 0:
-        df = df.sort_values(by=desc_order_data_arr, ascending=False)
-
-    return df
-
-
-def pivot_dataframe(request_data, df):
-    try:
-        agg_column_name = ''
-        avg_column_name = ''
-        sum_column_name = ''
-        agg_data = {}
-        rename_column = {}
-
-        pivot_data = request_data['pivot']
-        group_by_column = pivot_data['column']
-        group_by_column_arr = group_by_column.split(',')
-
-        if 'sum' in pivot_data:
-            sum_column_arr = pivot_data['sum'].split(',')
-            sum_agg_column_name = sum_column_arr[0]
-            rename_column.update({'sum': sum_column_arr[1]})
-
-            if sum_agg_column_name in agg_data.keys():
-                data = agg_data.get(sum_agg_column_name)
-                data.append('sum')
-                agg_data[sum_agg_column_name] = data
-            else:
-                agg_data.update({sum_agg_column_name: ['sum']})
-
-        if 'avg' in pivot_data:
-            avg_column_arr = pivot_data['avg'].split(',')
-            avg_agg_column_name = avg_column_arr[0]
-            rename_column.update({'mean': avg_column_arr[1]})
-
-            if avg_agg_column_name in agg_data.keys():
-                data = agg_data.get(avg_agg_column_name)
-                data.append('mean')
-                agg_data[avg_agg_column_name] = data
-            else:
-                agg_data.update({avg_agg_column_name: ['mean']})
-
-        if 'count' in pivot_data:
-            count_column_arr = pivot_data['count'].split(',')
-            count_agg_column_name = count_column_arr[0]
-            rename_column.update({'count': count_column_arr[1]})
-
-            if count_agg_column_name in agg_data.keys():
-                data = agg_data.get(count_agg_column_name)
-                data.append('count')
-                agg_data[count_agg_column_name] = data
-            else:
-                agg_data.update({count_agg_column_name: ['count']})
-
-        if len(agg_data) > 0:
-            print(agg_data)
-            # df = df.groupby(group_by_column_arr)[agg_column_name].agg(['sum', 'mean']).reset_index().rename(
-            #     columns={'sum': sum_column_name, 'mean': avg_column_name})
-
-            df = df.groupby(group_by_column_arr).agg(agg_data)
-
-            df = df.droplevel(0, axis=1)
-            df = df.rename(columns=rename_column)
-            df = df.reset_index()
-            # print(df.head())
-
-        return  df
-    except Exception as e:
-        return df
-
-
-
-def read_sheet(file_path, tab_name, column_names_data):
-    xls = pd.ExcelFile(file_path)
-    sheetNames = xls.sheet_names
-    index = sheetNames.index(tab_name)
-    sheet = xls.parse(sheetNames[index], index=False)
-    if len(column_names_data) > 0:
-        df = sheet[column_names_data]
-        print(df.first)
-    else:
-        df = sheet
-
-    return df
