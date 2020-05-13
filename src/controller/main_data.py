@@ -153,7 +153,7 @@ def pivot_data():
 
         # Pivot Dataframe based on condition
         if 'pivot' in properties:
-           df = pivot_dataframe(properties, df)
+           df = fusion_data_pivot(properties, df)
 
         # Sort Data Based On Condition
         if len(order_data) > 0 :
@@ -162,4 +162,4 @@ def pivot_data():
         return df.to_json(orient='records')
 
     except Exception as e:
-        return jsonify(default_message())
+        return jsonify(default_message(e))

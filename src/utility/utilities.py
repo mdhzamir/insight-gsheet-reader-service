@@ -230,6 +230,8 @@ def pivot_dataframe(request_data, df):
         sum_column_name = ''
         agg_data = {}
         rename_column = {}
+        # print(request_data)
+        print(df)
 
         pivot_data = request_data['pivot']
         group_by_column = pivot_data['column']
@@ -281,29 +283,71 @@ def pivot_dataframe(request_data, df):
             df = df.droplevel(0, axis=1)
             df = df.rename(columns=rename_column)
             df = df.reset_index()
-            # print(df.head())
+            print(df.head())
 
         return  df
     except Exception as e:
         return df
 
+def fusion_data_pivot(request_data, df):
+    try:
+        agg_data = {}
+        rename_column = {}
+        pivot_data = request_data['pivot']
+        group_by_column = pivot_data['column']
+        group_by_column_arr = group_by_column.split(',')
+        function_column_list = []
 
+        if 'sum' in pivot_data:
+            sum_column_arr = pivot_data['sum'].split(',')
+            sum_agg_column_name = sum_column_arr[0]
+            rename_column.update({sum_column_arr[0]+'_sum': sum_column_arr[1]})
+            function_column_list.append(sum_column_arr[0])
 
+            if sum_agg_column_name in agg_data.keys():
+                data = agg_data.get(sum_agg_column_name)
+                data.append('sum')
+                agg_data[sum_agg_column_name] = data
+            else:
+                agg_data.update({sum_agg_column_name: ['sum']})
 
-# def pivot_dataframe(df, properties):
-#     pivot_data = properties['pivot']
-#     group_by_column = pivot_data['column']
-#     group_by_column_arr = group_by_column.split(',')
-#
-#     sum_column_arr = pivot_data['sum'].split(',')
-#     avg_column_arr = pivot_data['avg'].split(',')
-#     agg_column_name = sum_column_arr[0]
-#     sum_column_name = sum_column_arr[1]
-#     avg_column_name = avg_column_arr[1]
-#
-#     if agg_column_name != '':
-#         df = df.groupby(group_by_column_arr)[agg_column_name].agg(['sum', 'mean']).reset_index().rename(
-#             columns={'sum': sum_column_name, 'mean': avg_column_name})
-#
-#     # print(df.head())
-#     return df
+        if 'avg' in pivot_data:
+            avg_column_arr = pivot_data['avg'].split(',')
+            avg_agg_column_name = avg_column_arr[0]
+            rename_column.update({avg_column_arr[0] + '_mean': avg_column_arr[1]})
+            function_column_list.append(avg_column_arr[0])
+
+            if avg_agg_column_name in agg_data.keys():
+                data = agg_data.get(avg_agg_column_name)
+                data.append('mean')
+                agg_data[avg_agg_column_name] = data
+            else:
+                agg_data.update({avg_agg_column_name: ['mean']})
+
+        if 'count' in pivot_data:
+            count_column_arr = pivot_data['count'].split(',')
+            count_agg_column_name = count_column_arr[0]
+            rename_column.update({count_column_arr[0] + '_count': count_column_arr[1]})
+            function_column_list.append(count_column_arr[0])
+
+            if count_agg_column_name in agg_data.keys():
+                data = agg_data.get(count_agg_column_name)
+                data.append('count')
+                agg_data[count_agg_column_name] = data
+            else:
+                agg_data.update({count_agg_column_name: ['count']})
+
+        if len(agg_data) > 0:
+            compare_list = list(set(list(df.columns.values)) - set(function_column_list))
+            compare_list = list(set(list(compare_list)) - set(group_by_column_arr))
+            for i in compare_list:
+                agg_data.update({i: ['first']})
+                rename_column.update({i + '_first': i})
+
+            df = df.groupby(group_by_column_arr).agg(agg_data)
+            df.columns = ["_".join(x) for x in df.columns.ravel()]
+            df = df.rename(columns=rename_column)
+            df = df.reset_index()
+        return df
+    except Exception as e:
+        return df
