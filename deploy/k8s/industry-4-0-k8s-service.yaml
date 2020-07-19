@@ -8,6 +8,6 @@ spec:
     app: $K8S_SERVICE_NAME
   ports:
     - name: http
-      port: 5001
-      targetPort: 5001
+      port: $K8S_CLUSTER_PORT
+      targetPort: $K8S_CLUSTER_PORT
   type: ClusterIP
