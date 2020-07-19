@@ -73,8 +73,8 @@ pipeline {
             steps {
                 sh '''
                 echo "Building docker $DOCKER_TAG image"
-                #docker build -f $DEPLOYMENT_DIRECTORY/k8s.Dockerfile -t $DOCKER_TAG .
-                #docker images|grep $PROJECT_NAME
+                # docker build -f $DEPLOYMENT_DIRECTORY/k8s.Dockerfile -t $DOCKER_TAG .
+                # docker images|grep $PROJECT_NAME
                 '''
             }
         }  
@@ -82,14 +82,14 @@ pipeline {
       stage('Push to Docker Registry') {
             steps {
                 echo "Pushting to docker registry $DOCKER_TAG image"
-                #sh 'docker push $DOCKER_TAG'
+                sh '# docker push $DOCKER_TAG'
             }
         }
 
       stage('Deleted image from local after upload to Registry') {
             steps {
                 echo "Cleaning local docker registry $DOCKER_TAG image"
-                #sh 'docker rmi $DOCKER_TAG'
+                sh '#docker rmi $DOCKER_TAG'
             }
         }
       
