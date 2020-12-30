@@ -7,19 +7,20 @@ pipeline {
 
     environment {
         REGISTRY="docker-reg.oss.net.bd"
-        dockerRegistryCredential='uat-docker-reg.oss.net.bd'
-        dockerImage = ''
-        DOCKER_REGISTRY_URL="https://$REGISTRY"
-        
+			dockerRegistryCredential='uat-docker-reg.oss.net.bd'
+			dockerImage = ''
+			DOCKER_REGISTRY_URL="https://$REGISTRY"
+
         DEPLOYMENT_ENV="k8s"
         IMAGE_CREATED_BY="jenkins"
         PROJECT_NAME="insight-gsheet-reader-service"
-
+        K8S_CLUSTER_PORT="5001"
+        
         GIT_TAG=sh(returnStdout: true, script: '''
             COMMIT_ID=$(git log -1|head -1|awk -F ' ' '{print $NF}')
             echo $(git show-ref --tag | grep $COMMIT_ID | awk -F '/' '{print $NF}')
         ''').trim()
-
+     
         //Host specific configuration
         M2_REPO="/home/kubernet/.m2/"
 
@@ -30,34 +31,24 @@ pipeline {
         IMAGE_VERSION="$BUILD_NUMBER-$IMAGE_CREATED_BY-$GIT_TAG-$DEPLOYMENT_ENV_VERSION"
         DOCKER_TAG="$REGISTRY/$PROJECT_NAME:$IMAGE_VERSION"
         DEPLOYMENT_DIRECTORY="./deploy/$DEPLOYMENT_ENV"
-
+        
         //k8s cluster specific configuration
         K8S_SERVICE_NAME="$PROJECT_NAME"
         K8S_CHANGE_CAUSE="$IMAGE_VERSION"
 
-        K8S_NODE_PORT=sh(returnStdout: true, script: '''
+        K8S_NODE_PORT=sh(returnStdout: true, script: '''    
                 if [ $K8S_NAMESPACE == "industry-4-0" ]
                 then
                     echo ""
                 else
-                    echo "32052"
+                    echo "32501"
                 fi
             '''
         ).trim()
 
-        PROFILE=sh(returnStdout: true, script: '''
-                if [ $K8S_NAMESPACE == "industry-4-0" ]
-                then
-                    echo "k8s"
-                else
-                    echo "uat"
-                fi
-            '''
-        ).trim()        
-
     }
 
-    stages {
+    stages {        
         stage('Init') {
             steps {
                 sh '''
@@ -65,15 +56,15 @@ pipeline {
                 commit_count=$(echo -n $(git show-ref --tag | grep $COMMIT_ID | awk -F '/' '{print $NF}'|wc -l))
                 if [[ $commit_count -eq 1 ]]
                 then
-                    echo $(git show-ref --tag | grep $COMMIT_ID | awk -F '/' '{print $NF}')
+                    echo $(git show-ref --tag | grep $COMMIT_ID | awk -F '/' '{print $NF}') 
                 else
-                    echo ERROR: Duplicate commit id for $(git show-ref --tag | grep $COMMIT_ID | awk -F '/' '{print $NF}')
+                    echo ERROR: Duplicate commit id for $(git show-ref --tag | grep $COMMIT_ID | awk -F '/' '{print $NF}') 
                     exit 1 # terminate and indicate error
-                fi
+                fi                
                 '''
             }
-        }
-
+        }    
+    
         stage('Test') {
             steps {
                 sh '''
@@ -81,24 +72,8 @@ pipeline {
                 '''
             }
         }
-
-        stage('Build') {
-            steps {
-                sh '''
-                echo "release.version=Release Version is $IMAGE_VERSION" > src/main/resources/release-note.properties
-                echo "release.lastcommitid=Release Version is $(git log -1|head -1|awk -F ' ' '{print $NF}')" >> src/main/resources/release-note.properties
-                echo "Maven build for Tag.....$GIT_TAG"
-                docker run --rm \
-                -v $PROJECT_LOCATION:/app -v $M2_REPO:/root/.m2/ -w /app \
-                maven:3-alpine \
-                mvn clean package -B \
-                -Dmaven.test.skip=true \
-                -Dactive.profile=$PROFILE \
-                '''
-                }             
-        }   
-
-     stage('Building Docker image') { 
+          
+      stage('Building Docker image') { 
             steps { 
                 script { 
                     dockerImage = docker.build("$DOCKER_TAG", "-f $DEPLOYMENT_DIRECTORY/k8s.Dockerfile .")
@@ -147,4 +122,3 @@ pipeline {
         }
     }
 }
-
