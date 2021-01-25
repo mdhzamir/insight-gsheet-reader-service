@@ -7,18 +7,17 @@ pipeline {
 
     environment {
         REGISTRY="docker-reg.oss.net.bd"
-			dockerRegistryCredential='uat-docker-reg.oss.net.bd'
-			dockerImage = ''
-			DOCKER_REGISTRY_URL="https://$REGISTRY"
+		dockerRegistryCredential='uat-docker-reg.oss.net.bd'
+		dockerImage = ''
+		DOCKER_REGISTRY_URL="https://$REGISTRY"
 
         DEPLOYMENT_ENV="k8s"
         IMAGE_CREATED_BY="jenkins"
         PROJECT_NAME="insight-gsheet-reader-service"
         K8S_CLUSTER_PORT="5001"
         
-        GIT_TAG=sh(returnStdout: true, script: '''
-            COMMIT_ID=$(git log -1|head -1|awk -F ' ' '{print $NF}')
-            echo $(git show-ref --tag | grep $COMMIT_ID | awk -F '/' '{print $NF}')
+        GIT_TAG=sh(returnStdout: true, script: '''        
+            echo $(git describe --tags)
         ''').trim()
      
         //Host specific configuration
@@ -52,18 +51,25 @@ pipeline {
         stage('Init') {
             steps {
                 sh '''
-                COMMIT_ID=$(git log -1|head -1|awk -F ' ' '{print $NF}')
-                commit_count=$(echo -n $(git show-ref --tag | grep $COMMIT_ID | awk -F '/' '{print $NF}'|wc -l))
-                if [[ $commit_count -eq 1 ]]
-                then
-                    echo $(git show-ref --tag | grep $COMMIT_ID | awk -F '/' '{print $NF}') 
-                else
-                    echo ERROR: Duplicate commit id for $(git show-ref --tag | grep $COMMIT_ID | awk -F '/' '{print $NF}') 
-                    exit 1 # terminate and indicate error
-                fi                
+                COMMIT_ID=$(git log -1|head -1|awk -F ' ' ' {print $NF}')
+                echo "........result of commit .... $COMMIT_ID"
                 '''
             }
-        }    
+        }
+
+        stage('Check for tag') {
+            steps {
+                sh '''     
+                if [ -z "$GIT_TAG" ] #empty check
+                 then
+                    echo ERROR: Tag not found
+                    exit 1 # terminate and indicate error                 
+                fi
+                echo "git checking out to $GIT_TAG tag"
+                git checkout $GIT_TAG 
+                '''    
+            }
+        }
     
         stage('Test') {
             steps {
@@ -73,7 +79,7 @@ pipeline {
             }
         }
           
-      stage('Building Docker image') { 
+        stage('Building Docker image') { 
             steps { 
                 script { 
                     dockerImage = docker.build("$DOCKER_TAG", "-f $DEPLOYMENT_DIRECTORY/k8s.Dockerfile .")
@@ -84,7 +90,7 @@ pipeline {
             } 
         }
 
-      stage('Push docker image') {
+        stage('Push docker image') {
             steps{
                 script {
                     docker.withRegistry( "$DOCKER_REGISTRY_URL", dockerRegistryCredential ) {
@@ -96,27 +102,27 @@ pipeline {
             }
         }
 
-     stage('Deleted image After upload to Registry') {
+        stage('Deleted image After upload to Registry') {
             steps {
                 echo "Cleaning local docker registry $DOCKER_TAG image"
                 sh 'docker rmi $DOCKER_TAG'
             }
         }
 
-    stage('K8S Deployment') {
+        stage('K8S Deployment') {
             steps {
                 sh '''
-                envsubst < $DEPLOYMENT_DIRECTORY/sec-reg-k8s-deployment.yaml | xargs -I{} echo {}
-                envsubst < $DEPLOYMENT_DIRECTORY/sec-reg-k8s-deployment.yaml | kubectl apply -f -
+                envsubst < $DEPLOYMENT_DIRECTORY/backup/$K8S_NAMESPACE-k8s-deployment.yaml | xargs -I{} echo {}
+                envsubst < $DEPLOYMENT_DIRECTORY/backup/$K8S_NAMESPACE-k8s-deployment.yaml | kubectl apply -f -
                 
                 '''
             }
         }
-     stage('Deploy service') {
+        stage('Deploy service') {
             steps {
                 sh '''
-                envsubst < $DEPLOYMENT_DIRECTORY/$K8S_NAMESPACE-k8s-service.yaml | xargs -I{} echo {}
-                envsubst < $DEPLOYMENT_DIRECTORY/$K8S_NAMESPACE-k8s-service.yaml | kubectl apply -f -
+                envsubst < $DEPLOYMENT_DIRECTORY/backup/$K8S_NAMESPACE-k8s-service.yaml | xargs -I{} echo {}
+                envsubst < $DEPLOYMENT_DIRECTORY/backup/$K8S_NAMESPACE-k8s-service.yaml | kubectl apply -f -
                 '''
             }
         }
