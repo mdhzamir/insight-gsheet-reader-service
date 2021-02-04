@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: $K8S_SERVICE_NAME
+  namespace: $K8S_NAMESPACE
+spec:
+  selector:
+    app: $K8S_SERVICE_NAME
+  ports:
+    - name: http
+      port: $K8S_CLUSTER_PORT
+      targetPort: $K8S_CLUSTER_PORT
+  type: ClusterIP
