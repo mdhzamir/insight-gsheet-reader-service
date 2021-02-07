@@ -8,6 +8,6 @@ spec:
     app: $K8S_SERVICE_NAME
   ports:
     - name: $SERVICE_PORT_NAME
-      port: $K8S_CLUSTER_PORT
-      targetPort: $K8S_CLUSTER_PORT
-  type: NodePort
+      port: $K8S_SERVICE_PORT
+      targetPort: $K8S_CONTAINER_AND_TARGET_PORT
+  type: ClusterIP

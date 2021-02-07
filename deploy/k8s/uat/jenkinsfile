@@ -9,7 +9,9 @@ pipeline {
         K8S_NAMESPACE="test-env"
 
         //Port configuration
-        K8S_CLUSTER_PORT="5001"
+        K8S_CONTAINER_AND_TARGET_PORT="5001"
+        K8S_SERVICE_PORT="5001"
+        
         SERVICE_PORT_NAME="http"
         
         
@@ -25,7 +27,7 @@ pipeline {
         IMAGE_VERSION="$BUILD_NUMBER-$IMAGE_CREATED_BY-$GIT_TAG-$DEPLOYMENT_ENV"
         IMAGE_REPOSITORY_NAME="$REGISTRY/$PROJECT_NAME"
         DOCKER_TAG="$IMAGE_REPOSITORY_NAME:$IMAGE_VERSION"
-        DEPLOYMENT_DIRECTORY="./deploy/$DEPLOYMENT_ENV"
+        DEPLOYMENT_DIRECTORY="./deploy/k8s"
         
         //k8s cluster specific configuration
         K8S_SERVICE_NAME="$PROJECT_NAME"
@@ -37,7 +39,7 @@ pipeline {
 
     }
 
-    stages {
+       stages {
         stage('Check for tag') {
             steps {
                 sh '''       
@@ -61,25 +63,24 @@ pipeline {
                 '''
             }
         }
-    
-    }
+        
 
-        stage('Building Docker image') { 
-            steps { 
-                script { 
+    stage('Building Docker image') { 
+        steps { 
+            script { 
                 dockerImage = docker.build("$DOCKER_TAG", "-f $DEPLOYMENT_DIRECTORY/k8s.Dockerfile .")
-                }
-                sh '''
-                docker images|grep $PROJECT_NAME
-                '''
+            }
+            sh '''
+            docker images|grep $PROJECT_NAME
+            '''
         } 
     }
     
 
-        stage('Push docker image') {
-            steps{
-                script {
-                    docker.withRegistry( "$DOCKER_REGISTRY_URL", dockerRegistryCredential ) {
+    stage('Push docker image') {
+        steps{
+            script {
+                docker.withRegistry( "$DOCKER_REGISTRY_URL", dockerRegistryCredential ) {
                     dockerImage.push()
                     sh "docker images | grep $IMAGE_REPOSITORY_NAME"
                 }
@@ -87,29 +88,33 @@ pipeline {
             }
         }
     }
-        stage('Clear image from local after push to Registry') {
-            steps {
-                echo "Cleaning local docker registry $IMAGE_REPOSITORY_NAME"
-                sh '''
-                docker rmi $(docker images | grep $IMAGE_REPOSITORY_NAME | awk -F' ' '{print $3}')
-                '''
+    stage('Clear image from local after push to Registry') {
+        steps {
+            echo "Cleaning local docker registry $IMAGE_REPOSITORY_NAME"
+            sh '''
+            docker rmi $(docker images | grep $IMAGE_REPOSITORY_NAME | awk -F' ' '{print $3}')
+            '''
         }
     }
-        stage('Deploy Pod') {
-            steps {
-                sh '''
-                envsubst < $DEPLOYMENT_DIRECTORY/$DEPLOYMENT_ENV/k8s-deploy.yaml | xargs -I{} echo {}
-                envsubst < $DEPLOYMENT_DIRECTORY/$DEPLOYMENT_ENV/k8s-deploy.yaml | kubectl apply -f -
-                '''
+    stage('Deploy Pod') {
+        steps {
+            sh '''
+            envsubst < $DEPLOYMENT_DIRECTORY/$DEPLOYMENT_ENV/k8s-deploy.yaml | xargs -I{} echo {}
+            envsubst < $DEPLOYMENT_DIRECTORY/$DEPLOYMENT_ENV/k8s-deploy.yaml | kubectl apply -f -
+            '''
         }
     }
-        stage('Deploy Service') {
-            steps {
-                sh '''
-                envsubst < $DEPLOYMENT_DIRECTORY/$DEPLOYMENT_ENV/k8s-service.yaml | xargs -I{} echo {}
-                envsubst < $DEPLOYMENT_DIRECTORY/$DEPLOYMENT_ENV/k8s-service.yaml | kubectl apply -f -
-                '''
+    stage('Deploy Service') {
+        steps {
+            sh '''
+            envsubst < $DEPLOYMENT_DIRECTORY/$DEPLOYMENT_ENV/k8s-service.yaml | xargs -I{} echo {}
+            envsubst < $DEPLOYMENT_DIRECTORY/$DEPLOYMENT_ENV/k8s-service.yaml | kubectl apply -f -
+            '''
                 }
             } 
-        }                    
+
+        }
+                            
     }
+
+
